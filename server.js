@@ -118,6 +118,31 @@ app.get("/upcoming-launches", async (req, res) => {
     }
 });
 
+app.get("/spacestations", async (req, res) => {
+    try {
+        const response = await axios.get("https://ll.thespacedevs.com/2.2.0/spacestation");
+        const result = response.data;
+
+        var space_stations = [];
+
+        for(var i = 0; i < result.count; i++) {
+            if (result.results.status.name == "Active") {
+                const data = {
+                    name: result.results.name,
+                    orbit: result.results.orbit,
+                    active_expeditions: result.results.active_expeditions,
+                }
+            space_stations.push(data);
+            }
+        }
+
+        res.json(space_stations);
+
+    } catch (error) {
+        res.json(error.message);
+    }
+});
+
 app.listen(port, () => {
     console.log(`Successfully up and running on port ${port}`);
 });
