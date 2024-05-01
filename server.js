@@ -37,6 +37,9 @@ app.get("/nasa-apod", async (req, res) => {
     }
 });
 
+
+//------------------------------------------------------------------------------------------------
+// /landsat-imagery?lat=LAT&long=LONG&dim=DIM&date=YYYY/MM/DD
 app.get("/landsat-imagery", async (req, res) => {
     try {
         const latitude = req.query.lat;
@@ -48,42 +51,23 @@ app.get("/landsat-imagery", async (req, res) => {
         const response = await axios.get(`https://api.nasa.gov/planetary/earth/imagery?lon=${longitude}&lat=${latitude}&date=${api_req_date}&api_key=${NASA_API_KEY}`);
         const result = response.data;
 
+        const image_data = {
+            type: "png", 
+            base64: result,
+            convert_base64_to_png: "https://medium.com/@divinehycenth8/convert-a-base64-data-into-an-image-in-node-js-d82136576e35"
+        };
+
         //console.log(result);
-        res.json(result);
+        res.json(image_data);
+
     } catch (error) {
         res.json(error.message);
     }
 });
 
-app.get("/upcoming", async (req, res) => {
-    try {
-        const response = await axios.get("https://ll.thespacedevs.com/2.2.0/launch/upcoming");
-        const result = response.data;
-        const latest = result.results[0];
 
-        const respose = {
-            name : latest.name,
-            status : latest.status?.name,
-            last_updated : latest.last_updated,
-            start_window : latest.window_start,
-            end_window : latest.window_end,
-            launch_by : latest.launch_service_provider?.name,
-            launch_type : latest.launch_service_provider?.type,
-            rocket_name : latest.rocket.configuration?.name,
-            mission_name : latest.mission?.name,
-            mission_description : latest.mission?.description,
-            launch_pad : latest.pad?.name,
-            launch_venue : latest.pad?.location?.name,
-            latitude : latest.pad?.latitude,
-            longitude : latest.pad?.longitude,
-        }
-
-        res.json(response);
-    } catch (error) {
-        res.json(error.message);
-    }
-})
-
+//------------------------------------------------------------------------------------------------
+// /upcoming-launches
 app.get("/upcoming-launches", async (req, res) => {
     try {
         const response = await axios.get("https://ll.thespacedevs.com/2.2.0/launch/upcoming");
@@ -112,36 +96,158 @@ app.get("/upcoming-launches", async (req, res) => {
 
             final_launch_data.push(launch_data);
         }
-        console.log(final_launch_data);
+        //console.log(final_launch_data);
+        res.json(final_launch_data);
     } catch (error) {
         res.json(error.message);
     }
 });
 
-app.get("/spacestations", async (req, res) => {
+
+//------------------------------------------------------------------------------------------------
+// /astronauts-in-iss
+app.get("/astronauts-in-iss", async (req, res) => {
     try {
-        const response = await axios.get("https://ll.thespacedevs.com/2.2.0/spacestation");
+        const response = await axios.get("http://api.open-notify.org/astros.json");
         const result = response.data;
+        //console.log(result);
 
-        var space_stations = [];
+        let iss_crew = [];
+        for (var i = 0; i < result.people.length; i++) {
+            if (result.people[i].craft == 'ISS') {
+                iss_crew.push(result.people[i].name);
+            }
+        }
+        const data = { iss_crew_members: iss_crew };
+        //console.log(iss_crew);
+        res.json(data);
+    } catch (error) {
+        res.json(error.message);
+    }
+});
+//-----------------------------------------------------------------------------------------------
+/* 
+solar-system-bodies?type=TYPE
+types: all, local, non-planets, planets
+*/
+app.get("/solar-system-bodies", async (req, res) => {
+    try {
+        const response = await axios.get("https://api.le-systeme-solaire.net/rest/bodies/");
+        const result = response.data;
+        //console.log(result.bodies.length);
 
-        for(var i = 0; i < result.count; i++) {
-            if (result.results.status.name == "Active") {
-                const data = {
-                    name: result.results.name,
-                    orbit: result.results.orbit,
-                    active_expeditions: result.results.active_expeditions,
+        let bodiesData = [];
+
+        for (var i = 0; i < result.bodies.length; i++) {
+            const body_info = {
+                id: result.bodies[i].id,
+                name: result.bodies[i].englishName,
+                aphelion: result.bodies[i].aphelion,
+                perihelion: result.bodies[i].perihelion,
+                mass: result.bodies[i].mass,
+                volume: result.bodies[i].volume,
+                density: result.bodies[i].density,
+                gravity: result.bodies[i].gravity
+            };
+            bodiesData.push(body_info);
+        };
+
+
+        let planetary_bodies = [
+            "Mercury",
+            "Venus",
+            "Earth",
+            "Mars",
+            "Jupiter",
+            "Saturn",
+            "Uranus",
+            "Neptune",
+            "Pluto"  // Some consider Pluto a dwarf planet rather than a full-fledged planet
+        ];
+
+        let planetsInOurSolarSystem = [];
+
+        for (var i = 0; i < planetary_bodies.length; i++) {
+            const planet = planetary_bodies[i];
+            for (var j = 0; j < bodiesData.length; j++) {
+                if (bodiesData[j].name == planet) {
+                    planetsInOurSolarSystem.push(bodiesData[j]);
                 }
-            space_stations.push(data);
             }
         }
 
-        res.json(space_stations);
+        let nonPlanets = [];
+        let planets = [];
+        for (var i = 0; i < result.bodies.length; i++) {
+            if (result.bodies[i].isPlanet === false) {
+                const body_info = {
+                    id: result.bodies[i].id,
+                    name: result.bodies[i].englishName,
+                    aphelion: result.bodies[i].aphelion,
+                    perihelion: result.bodies[i].perihelion,
+                    mass: result.bodies[i].mass,
+                    volume: result.bodies[i].volume,
+                    density: result.bodies[i].density,
+                    gravity: result.bodies[i].gravity
+                };
+                nonPlanets.push(body_info);
+            } else {
+                const body_info = {
+                    id: result.bodies[i].id,
+                    name: result.bodies[i].englishName,
+                    aphelion: result.bodies[i].aphelion,
+                    perihelion: result.bodies[i].perihelion,
+                    mass: result.bodies[i].mass,
+                    volume: result.bodies[i].volume,
+                    density: result.bodies[i].density,
+                    gravity: result.bodies[i].gravity
+                };
+                planets.push(body_info);
+            }
+        }
+
+        const final_bodies_data = {
+            count: bodiesData.length,
+            bodies: bodiesData
+        };
+        const planets_in_our_solarsystem = {
+            count: planetsInOurSolarSystem.length,
+            planets: planetsInOurSolarSystem
+        };
+        const non_planets = {
+            count: nonPlanets.length,
+            bodies: nonPlanets
+        };
+        const arePlanets = {
+            count: planets.length,
+            planets: planets
+        };
+
+        const requestType = req.query.type;
+        switch (requestType) {
+            case "all":
+                res.json(final_bodies_data);
+                break;
+            case "local":
+                res.json(planets_in_our_solarsystem);
+                break;
+            case "non-planets":
+                res.json(non_planets);
+                break;
+            case "planets":
+                res.json(arePlanets);
+                break;
+            default:
+                break;
+        };
+
+
 
     } catch (error) {
         res.json(error.message);
     }
 });
+//------------------------------------------------------------------------------------------------
 
 app.listen(port, () => {
     console.log(`Successfully up and running on port ${port}`);
