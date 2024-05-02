@@ -1,3 +1,11 @@
+/*
+http://open-notify.org/Open-Notify-API/People-In-Space/
+https://api.le-systeme-solaire.net/en/
+https://github.com/appbrewery/public-api-lists?tab=readme-ov-file#public-api-lists
+https://thespacedevs.com/llapi
+https://api.nasa.gov/
+*/
+
 import express from "express";
 import axios from "axios";
 
