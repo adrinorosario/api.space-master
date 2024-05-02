@@ -128,7 +128,7 @@ app.get("/astronauts-in-iss", async (req, res) => {
 //-----------------------------------------------------------------------------------------------
 /* 
 solar-system-bodies?type=TYPE
-types: all, local, non-planets, planets
+types: all, local, non-planets, planets, dwarf, star, moon, comet
 */
 app.get("/solar-system-bodies", async (req, res) => {
     try {
@@ -206,6 +206,22 @@ app.get("/solar-system-bodies", async (req, res) => {
             }
         }
 
+        let dwarves = [];
+        let moons = [];
+        let stars = [];
+        let comets = [];
+        for (var i = 0; i < bodiesData.length; i++) {
+            if (bodiesData[i].bodyType == "Moon") {
+                moons.push(bodiesData[i]);
+            } else if (bodiesData[i].bodyType == "Dwarf Planet") {
+                dwarves.push(bodiesData[i]);
+            } else if (bodiesData[i].bodyType == "Star") {
+                stars.push(bodiesData[i]);
+            } else if(bodiesData[i].bodyType == "Comet") {
+                comets.push(bodiesData[i]);
+            }
+        };
+
         const final_bodies_data = {
             count: bodiesData.length,
             bodies: bodiesData
@@ -222,6 +238,23 @@ app.get("/solar-system-bodies", async (req, res) => {
             count: planets.length,
             planets: planets
         };
+        const dwarf = {
+            count: dwarves.length,
+            bodies: dwarves
+        };
+        const moon = {
+            count: moons.length,
+            bodies: moons
+        };
+        const star = {
+            count: stars.length,
+            stars: stars
+        };
+        const comet = {
+            count: comets.length,
+            bodies: comets
+        };
+
 
         const requestType = req.query.type;
         switch (requestType) {
@@ -237,17 +270,28 @@ app.get("/solar-system-bodies", async (req, res) => {
             case "planets":
                 res.json(arePlanets);
                 break;
+            case "dwarf":
+                res.json(dwarf);
+                break;
+            case "star":
+                res.json(star);
+                break;
+            case "moon":
+                res.json(moon);
+                break;
+            case "comet":
+                res.json(comet);
+                break;
             default:
                 break;
         };
-
-
 
     } catch (error) {
         res.json(error.message);
     }
 });
 //------------------------------------------------------------------------------------------------
+
 
 app.listen(port, () => {
     console.log(`Successfully up and running on port ${port}`);
