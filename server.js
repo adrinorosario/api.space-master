@@ -1,13 +1,9 @@
 import express from "express";
-import bodyParser from "body-parser";
-import morgan from "morgan";
 import axios from "axios";
 
 const app = express();
 const port = 3000;
 const NASA_API_KEY = "bNjULSboAPSvDaYME41SMmVjiPSiccn0oV9e1AiD";
-
-app.use(bodyParser.urlencoded( {extended: true} ));
 
 var today = new Date();
 var dd = String(today.getDate()).padStart(2, '0');
