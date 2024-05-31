@@ -189,7 +189,7 @@ The API should now be running at `http://localhost:3000`.
 Contributions are welcome! Please open an issue or submit a pull request on GitHub.
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the GNU GENERAL PUBLIC LICENSE.
 
 ---
 
